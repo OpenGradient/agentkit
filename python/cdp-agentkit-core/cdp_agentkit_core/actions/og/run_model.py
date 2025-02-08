@@ -6,8 +6,9 @@ from pydantic import BaseModel, Field
 from cdp_agentkit_core.actions import CdpAction
 from cdp_agentkit_core.actions.morpho.constants import METAMORPHO_ABI
 from cdp_agentkit_core.actions.utils import approve
+from langchain_core.tools import StructuredTool
 
-import opengradient as og
+import opengradient.mltools as mltools
 
 RUN_MODEL_PROMPT = """
 This tool allows depositing assets into a Morpho Vault.
@@ -41,32 +42,20 @@ class OpenGradientRunModelInput(BaseModel):
     vault_address: str = Field(..., description="The address of the Morpho Vault to deposit to")
 
 
-def run_model(
-    vault_address: str,
-    assets: str,
-    receiver: str,
-    token_address: str,
-) -> str:
-    """Deposit assets into a Morpho Vault.
+def create_tool() -> CdpAction:
+    langchain_tool: StructuredTool = mltools.create_og_model_tool(
+        tool_type=mltools.ToolType.LANGCHAIN,
+        model_cid="forecast-cid",
+        tool_name="forecast",
+        input_getter=lambda: [],
+        input_schema=None,
+        output_formatter=None,
+        tool_description="hello"
+    )
 
-    Args:
-        wallet (Wallet): The wallet to execute the deposit from
-        vault_address (str): The address of the Morpho Vault
-        assets (str): The amount of assets to deposit in whole units (e.g., 0.01 WETH)
-        receiver (str): The address to receive the shares
-        token_address (str): The address of the token to approve
-
-    Returns:
-        str: A success message with transaction hash or error message
-
-    """
-    return "Done"
-
-
-class OpenGradientRunModelAction(CdpAction):
-    """OpenGradient run model action."""
-
-    name: str = "og_run_model"
-    description: str = RUN_MODEL_PROMPT
-    args_schema: type[BaseModel] = OpenGradientRunModelInput
-    func: Callable[..., str] = run_model
+    return CdpAction(
+        name=langchain_tool.name,
+        description=langchain_tool.description,
+        args_schema=langchain_tool.args_schema,
+        func=langchain_tool.func
+    )
