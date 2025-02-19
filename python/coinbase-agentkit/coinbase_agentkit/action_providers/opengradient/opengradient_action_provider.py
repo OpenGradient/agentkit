@@ -54,7 +54,7 @@ Important notes:
 """,
         schema=OpenGradientEthUsdtOneHourVolatilityForecast,
     )
-    def read_eth_usdt_one_hour_volatility_forecast(self) -> str:
+    def read_eth_usdt_one_hour_volatility_forecast(self, args: dict[str, Any]) -> str:
         """Read from the ETH/USDT one hour volatility forecast model workflow on the OpenGradient network.
 
         Args:
@@ -91,7 +91,7 @@ Important notes:
 """,
         schema=OpenGradientSuiUsdtSixHourReturnForecast,
     )
-    def read_sui_usdt_six_hour_return_forecast(self) -> str:
+    def read_sui_usdt_six_hour_return_forecast(self, args: dict[str, Any]) -> str:
         """Read from the SUI/USDT six hour return forecast workflow on the OpenGradient network.
 
         Args:
@@ -127,7 +127,7 @@ Important notes:
 """,
         schema=OpenGradientSuiUsdt30MinReturnForecast,
     )
-    def read_sui_usdt_30_minute_return_forecast(self) -> str:
+    def read_sui_usdt_30_minute_return_forecast(self, args: dict[str, Any]) -> str:
         """Read from the SUI/USDT 30 minute return forecast workflow on the OpenGradient network.
 
         Args:
@@ -151,10 +151,10 @@ Important notes:
 This tool generates responses using the Dobby-Mini-Unhinged-Llama-3.1-8B model, a language model with a focus on crypto-positive and pro-freedom responses.
 Do not use this tool for other LLM models or prompt formats.
 
+Always return this functions results exactly as-is.
+
 Inputs:
 - prompt: String containing the input prompt for the model
-- temperature: (Optional, default=0.95) Float between 0.0 and 2.0 controlling randomness (higher = more random)
-- max_tokens: (Optional, default=2048) Integer specifying maximum length of generated response
 
 Output:
 - Returns a string containing just the model's response text
@@ -165,6 +165,7 @@ Important notes:
   - Personal freedom and decentralization
   - Direct, unfiltered communication style
 - Response content may include strong opinions and informal language
+- The default maximum token length is 4096
 """,
         schema=OpenGradientPromptDobby,
     )
@@ -180,8 +181,6 @@ Important notes:
         """
         try:
             prompt = args["prompt"]
-            temperature = args["temperature"]
-            max_tokens = args["max_tokens"]
 
             message = [
                 {
@@ -193,8 +192,7 @@ Important notes:
             llm_output = og.llm_chat(
                 model_cid=og.LLM.DOBBY_UNHINGED_3_1_8B,
                 messages=message,
-                temperature=temperature,
-                max_tokens=max_tokens,
+                max_tokens=constants.DEFAULT_MAX_TOKENS,
             )
 
             return llm_output.chat_output.get(
@@ -209,10 +207,10 @@ Important notes:
 This tool generates responses using the Qwen2.5-72B-Instruct model, a language model with strong capabilities in coding, mathematics, and multilingual tasks.
 Do not use this tool for other LLM models or prompt formats.
 
+Always return this functions results exactly as-is.
+
 Inputs:
 - prompt: String containing the input prompt for the model
-- temperature: (Optional, default=0.95) Float between 0.0 and 2.0 controlling randomness (higher = more random)
-- max_tokens: (Optional, default=2048) Integer specifying maximum length of generated response
 
 Output:
 - Returns a string containing the model's response text
@@ -222,6 +220,7 @@ Important notes:
  - Complex coding tasks and mathematical reasoning
  - Structured data understanding and JSON generation
  - Multilingual responses across 29+ languages
+- The default maximum token length is 4096
 """,
         schema=OpenGradientPromptQwen,
     )
@@ -237,8 +236,6 @@ Important notes:
         """
         try:
             prompt = args["prompt"]
-            temperature = args["temperature"]
-            max_tokens = args["max_tokens"]
 
             message = [
                 {
@@ -250,8 +247,7 @@ Important notes:
             llm_output = og.llm_chat(
                 model_cid=og.LLM.QWEN_2_5_72B_INSTRUCT,
                 messages=message,
-                temperature=temperature,
-                max_tokens=max_tokens,
+                max_tokens=constants.DEFAULT_MAX_TOKENS,
             )
 
             return llm_output.chat_output.get(

@@ -69,10 +69,7 @@ def test_successful_prompt_dobby_schema():
     """Test that the OpenGradientPromptDobby schema accepts valid arguments."""
     args = {"prompt": "Hello World", "temperature": 0.0, "max_tokens": 10}
     schema = OpenGradientPromptDobby(**args)
-
     assert schema.prompt == args["prompt"]
-    assert schema.temperature == args["temperature"]
-    assert schema.max_tokens == args["max_tokens"]
 
 
 def test_bad_prompt_qwen_schema():
@@ -86,8 +83,6 @@ def test_successful_prompt_qwen_schema():
     args = {"prompt": "Hello World", "temperature": 0.0, "max_tokens": 10}
     schema = OpenGradientPromptQwen(**args)
     assert schema.prompt == args["prompt"]
-    assert schema.temperature == args["temperature"]
-    assert schema.max_tokens == args["max_tokens"]
 
 
 @pytest.mark.usefixtures("mock_env")
@@ -181,40 +176,32 @@ def test_successful_read_sui_usdt_30_min_return():
 @pytest.mark.usefixtures("mock_env")
 def test_successful_prompt_dobby():
     """Test that the prompt_dobby function works correctly with valid inputs."""
-    # Mock the expected successful response
     mock_response = MagicMock()
     mock_response.chat_output = {"content": "Sample model response"}
+    test_args = {"prompt": "Test prompt"}
 
-    # Create test arguments
-    test_args = {"prompt": "Test prompt", "temperature": 0.5, "max_tokens": 100}
-
-    # Mock the og.llm_chat function
     with patch("opengradient.llm_chat") as mock_llm:
         mock_llm.return_value = mock_response
 
         provider = opengradient_action_provider()
         result = provider.prompt_dobby(test_args)
 
-        # Verify the result
         assert result == "Sample model response"
 
-        # Verify the function was called with correct arguments
         mock_llm.assert_called_once_with(
             model_cid=og.LLM.DOBBY_UNHINGED_3_1_8B,
             messages=[{"role": "user", "content": "Test prompt"}],
-            temperature=0.5,
-            max_tokens=100,
+            max_tokens=constants.DEFAULT_MAX_TOKENS,
         )
 
 
 @pytest.mark.usefixtures("mock_env")
 def test_prompt_dobby_missing_content():
     """Test that the prompt_dobby function handles missing content in response properly."""
-    # Mock a response without content field
     mock_response = MagicMock()
-    mock_response.chat_output = {}  # Empty response
+    mock_response.chat_output = {}
 
-    test_args = {"prompt": "Test prompt", "temperature": 0.5, "max_tokens": 100}
+    test_args = {"prompt": "Test prompt"}
 
     with patch("opengradient.llm_chat") as mock_llm:
         mock_llm.return_value = mock_response
@@ -228,7 +215,7 @@ def test_prompt_dobby_missing_content():
 @pytest.mark.usefixtures("mock_env")
 def test_prompt_dobby_invalid_args():
     """Test that the prompt_dobby function handles invalid arguments properly."""
-    test_args = {"temperature": 0.5, "max_tokens": 100}
+    test_args = {"temperature": 0.5}
 
     provider = opengradient_action_provider()
     result = provider.prompt_dobby(test_args)
@@ -239,40 +226,32 @@ def test_prompt_dobby_invalid_args():
 @pytest.mark.usefixtures("mock_env")
 def test_successful_prompt_qwen():
     """Test that the prompt_qwen function works correctly with valid inputs."""
-    # Mock the expected successful response
     mock_response = MagicMock()
     mock_response.chat_output = {"content": "Sample model response"}
+    test_args = {"prompt": "Test prompt"}
 
-    # Create test arguments
-    test_args = {"prompt": "Test prompt", "temperature": 0.5, "max_tokens": 100}
-
-    # Mock the og.llm_chat function
     with patch("opengradient.llm_chat") as mock_llm:
         mock_llm.return_value = mock_response
 
         provider = opengradient_action_provider()
         result = provider.prompt_qwen(test_args)
 
-        # Verify the result
         assert result == "Sample model response"
 
-        # Verify the function was called with correct arguments
         mock_llm.assert_called_once_with(
             model_cid=og.LLM.QWEN_2_5_72B_INSTRUCT,
             messages=[{"role": "user", "content": "Test prompt"}],
-            temperature=0.5,
-            max_tokens=100,
+            max_tokens=constants.DEFAULT_MAX_TOKENS,
         )
 
 
 @pytest.mark.usefixtures("mock_env")
 def test_prompt_qwen_missing_content():
     """Test that the prompt_qwen function handles missing content in response properly."""
-    # Mock a response without content field
     mock_response = MagicMock()
-    mock_response.chat_output = {}  # Empty response
+    mock_response.chat_output = {}
 
-    test_args = {"prompt": "Test prompt", "temperature": 0.5, "max_tokens": 100}
+    test_args = {"prompt": "Test prompt"}
 
     with patch("opengradient.llm_chat") as mock_llm:
         mock_llm.return_value = mock_response
@@ -286,7 +265,7 @@ def test_prompt_qwen_missing_content():
 @pytest.mark.usefixtures("mock_env")
 def test_prompt_qwen_invalid_args():
     """Test that the prompt_qwen function handles invalid arguments properly."""
-    test_args = {"temperature": 0.5, "max_tokens": 100}
+    test_args = {"temperature": 0.5}
 
     provider = opengradient_action_provider()
     result = provider.prompt_qwen(test_args)
