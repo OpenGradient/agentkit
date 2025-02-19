@@ -23,8 +23,6 @@ class OpenGradientActionProvider(ActionProvider):
         super().__init__("opengradient", [])
 
         private_key = private_key or os.getenv("OPENGRADIENT_PRIVATE_KEY")
-        email = email or os.getenv("OPENGRADIENT_EMAIL")
-        password = password or os.getenv("OPENGRADIENT_PASSWORD")
 
         if not private_key:
             raise ValueError("OPENGRADIENT_PRIVATE_KEY is not configured.")
@@ -82,7 +80,7 @@ Important notes:
             return f"Error reading workflow: {e!s}"
         
     @create_action(
-        name="read_workflow_eth_usdt_one_hour_volatility_forecast",
+        name="read_eth_usdt_one_hour_volatility_forecast",
         description="""
 This tool reads the latest ETH/USDT 1-hour volatility prediction from a model deployment on the OpenGradient network. 
 The model forecasts the standard deviation of 1-minute returns for ETH/USDT over the next hour.
@@ -100,7 +98,7 @@ Important notes:
 """,
         schema=OpenGradientReadWorkflow,
     )
-    def read_workflow_eth_usdt_one_hour_volatility_forecast(self, args: dict[str, Any]) -> str:
+    def read_eth_usdt_one_hour_volatility_forecast(self, args: dict[str, Any]) -> str:
         """Reads from the ETH/USDT one hour volatility forecast model workflow on the OpenGradient network.
 
         Args:
@@ -119,7 +117,7 @@ Important notes:
             return f"Error reading one_hour_eth_usdt_volatility workflow: {e!s}"
         
     @create_action(
-        name="read_workflow_sui_usdt_six_hour_return_forecast",
+        name="read_sui_usdt_six_hour_return_forecast",
         description="""
 This tool reads the latest SUI/USDT 6-hour return forecast from a model deployment on the OpenGradient network. 
 The model predicts the expected price return over the next 6 hours for the SUI/USDT trading pair.
@@ -137,7 +135,7 @@ Important notes:
 """,
         schema=OpenGradientReadWorkflow,
     )
-    def read_workflow_sui_usdt_six_hour_return_forecast(self, args: dict[str, Any]) -> str:
+    def read_sui_usdt_six_hour_return_forecast(self, args: dict[str, Any]) -> str:
         """Reads from the SUI/USDT six hour return forecast workflow on the OpenGradient network.
 
         Args:
@@ -156,7 +154,7 @@ Important notes:
             return f"Error reading one_hour_eth_usdt_volatility workflow: {e!s}"
         
     @create_action(
-        name="read_workflow_sui_usdt_30_minute_return_forecast",
+        name="read_sui_usdt_30_minute_return_forecast",
         description="""
 This tool reads the latest SUI/USDT 30-minute return forecast from a model deployment on the OpenGradient network.
 The model predicts the expected price return over the next 30 minutes for the SUI/USDT trading pair.
@@ -174,7 +172,7 @@ Important notes:
 """,
         schema=OpenGradientReadWorkflow,
     )
-    def read_workflow_sui_usdt_30_minute_return_forecast(self, args: dict[str, Any]) -> str:
+    def read_sui_usdt_30_minute_return_forecast(self, args: dict[str, Any]) -> str:
         """Reads from the SUI/USDT 30 minute return forecast workflow on the OpenGradient network.
 
         Args:
