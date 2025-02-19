@@ -31,52 +31,6 @@ class OpenGradientActionProvider(ActionProvider):
             self.client = og.init(private_key=private_key, email=email, password=password)
         except Exception as e:
             raise ValueError(f"Failed to initialize OpenGradient client: {e}") from e
-
-    @create_action(
-        name="read_workflow",
-        description="""
-This tool reads workflow execution results from smart contracts deployed on the OpenGradient network.
-
-Inputs:
-- contract_address: A string containing an OpenGradient smart contract address where the workflow results are stored
-Note: This contract address must be a valid Ethereum address format (0x followed by 40 hexadecimal characters)
-
-Outputs:
-- A "ModelOuptut" string with three relevant tensors (arrays of values):
-    1. numbers -- This is a dictionary of number tensors
-    2. strings -- This is a dictionary of string tensors
-    3. jsons -- This is a dictionary of JSON tensors
-
-Example output:
-ModelOutput(numbers={'Y': array([0.02208495], dtype=float32)}, strings={}, jsons={}, is_simulation_result=False)
-
-Important notes:
-- This is a read-only operation and will not modify any blockchain state
-- Returns workflow results in their native format as stored on the blockchain
-- Will return an error if:
-  - The contract address is invalid
-  - The contract does not exist on the OpenGradient network
-  - The contract is not a valid workflow contract
-""",
-        schema=OpenGradientReadWorkflow,
-    )
-    def read_workflow(self, args: dict[str, Any]) -> str:
-        """Reads from a workflow on the OpenGradient network.
-
-        Args:
-            args (dict[str, Any]): Input arguments for the action.
-
-        Returns:
-            str: A message containing the action response or error details.
-
-        """
-        try:
-            contract_address = args['contract_address']
-            result = og.read_workflow_result(contract_address)
-
-            return str(result)
-        except Exception as e:
-            return f"Error reading workflow: {e!s}"
         
     @create_action(
         name="read_eth_usdt_one_hour_volatility_forecast",
