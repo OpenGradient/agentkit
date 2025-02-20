@@ -202,6 +202,7 @@ AgentKit is proud to have support for the following protocols, frameworks, and w
 <a href="https://app.morpho.org" target="_blank"><img src="./assets/protocols/morpho.svg" width="100" height="auto" alt="Morpho"></a>
 <a href="https://privy.io" target="_blank"><img src="./assets/protocols/privy.svg" width="100" height="auto" alt="Privy"></a>
 <a href="https://pyth.network" target="_blank"><img src="./assets/protocols/pyth.svg" width="100" height="auto" alt="Pyth"></a>
+<a href="https://opengradient.ai" target="_blank"><img src="./assets/protocols/opengradient.svg" width="100" height="auto" alt="OpenGradient"></a>
 
 ## 📝 License
 
