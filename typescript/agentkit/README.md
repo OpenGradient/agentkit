@@ -17,7 +17,7 @@ AgentKit is a framework for easily enabling AI agents to take actions onchain. I
   - [Adding Actions to your Action Provider](#adding-actions-to-your-action-provider)
   - [Adding Actions to your Action Provider that use a Wallet Provider](#adding-actions-to-your-action-provider-that-use-a-wallet-provider)
   - [Adding an Action Provider to your AgentKit instance](#adding-an-action-provider-to-your-agentkit-instance)
-- [Wallet Providers](#wallet-providers)
+- [EVM Wallet Providers](#evm-wallet-providers)
   - [CdpWalletProvider](#cdpwalletprovider)
     - [Network Configuration](#network-configuration)
     - [Configuring from an existing CDP API Wallet](#configuring-from-an-existing-cdp-api-wallet)
@@ -27,6 +27,17 @@ AgentKit is a framework for easily enabling AI agents to take actions onchain. I
     - [Configuring gas parameters](#configuring-cdpwalletprovider-gas-parameters)
   - [ViemWalletProvider](#viemwalletprovider)
     - [Configuring gas parameters](#configuring-viemwalletprovider-gas-parameters)
+  - [PrivyWalletProvider](#privywalletprovider)
+    - [Authorization Keys](#authorization-keys)
+    - [Exporting Privy Wallet information](#exporting-privy-wallet-information)
+- [SVM Wallet Providers](#svm-wallet-providers)
+  - [SolanaKeypairWalletProvider](#solanakeypairwalletprovider)
+    - [Network Configuration](#solana-network-configuration)
+    - [RPC URL Configuration](#rpc-url-configuration)
+  - [PrivyWalletProvider](#privywalletprovider-solana)
+    - [Connection Configuration](#connection-configuration)
+    - [Authorization Keys](#authorization-keys)
+    - [Exporting Privy Wallet information](#exporting-privy-wallet-information)
 - [Contributing](#contributing)
 
 ## Getting Started
@@ -283,6 +294,15 @@ const agent = createReactAgent({
 </tr>
 </table>
 </details>
+<details>
+<summary><strong>Jupiter</strong></summary>
+<table width="100%">
+<tr>
+    <td width="200"><code>swap</code></td>
+    <td width="768">Swap tokens on Solana using the Jupiter DEX aggregator.</td>
+</tr>
+</table>
+</details>
 
 ## Creating an Action Provider
 
@@ -391,13 +411,14 @@ const agentKit = new AgentKit({
 });
 ```
 
-## Wallet Providers
+## EVM Wallet Providers
 
 Wallet providers give an agent access to a wallet. AgentKit currently supports the following wallet providers:
 
 EVM:
-- [CdpWalletProvider](./src/wallet-providers/cdpWalletProvider.ts)
-- [ViemWalletProvider](./src/wallet-providers/viemWalletProvider.ts)
+- [CdpWalletProvider](https://github.com/coinbase/agentkit/blob/main/typescript/agentkit/src/wallet-providers/cdpWalletProvider.ts)
+- [ViemWalletProvider](https://github.com/coinbase/agentkit/blob/main/typescript/agentkit/src/wallet-providers/viemWalletProvider.ts)
+- [PrivyWalletProvider](https://github.com/coinbase/agentkit/blob/main/typescript/agentkit/src/wallet-providers/privyWalletProvider.ts)
 
 ### CdpWalletProvider
 
@@ -543,6 +564,161 @@ const walletProvider = new ViemWalletProvider(client, {
 });
 ```
 
+### PrivyWalletProvider
+
+The `PrivyWalletProvider` is a wallet provider that uses [Privy Server Wallets](https://docs.privy.io/guide/server-wallets/). This implementation extends the `ViemWalletProvider`.
+
+```typescript
+import { PrivyWalletProvider, PrivyWalletConfig } from "@coinbase/agentkit";
+
+// Configure Wallet Provider
+const config: PrivyWalletConfig = {
+    appId: "PRIVY_APP_ID",
+    appSecret: "PRIVY_APP_SECRET",
+    chainId: "84532", // base-sepolia
+    walletId: "PRIVY_WALLET_ID", // optional, otherwise a new wallet will be created
+    authorizationPrivateKey: PRIVY_WALLET_AUTHORIZATION_PRIVATE_KEY, // optional, required if your account is using authorization keys
+    authorizationKeyId: PRIVY_WALLET_AUTHORIZATION_KEY_ID, // optional, only required to create a new wallet if walletId is not provided
+};
+
+const walletProvider = await PrivyWalletProvider.configureWithWallet(config);
+```
+
+#### Authorization Keys
+
+Privy offers the option to use authorization keys to secure your server wallets.
+
+You can manage authorization keys from your [Privy dashboard](https://dashboard.privy.io/account).
+
+When using authorization keys, you must provide the `authorizationPrivateKey` and `authorizationKeyId` parameters to the `configureWithWallet` method if you are creating a new wallet. Please note that when creating a key, if you enable "Create and modify wallets", you will be required to use that key when creating new wallets via the PrivyWalletProvider.
+
+#### Exporting Privy Wallet information
+
+The `PrivyWalletProvider` can export wallet information by calling the `exportWallet` method. 
+
+```typescript
+const walletData = await walletProvider.exportWallet();
+
+// walletData will be in the following format:
+{
+    walletId: string;
+    authorizationKey: string | undefined;
+    chainId: string | undefined;
+}
+```
+
+## SVM Wallet Providers
+
+SVM:
+- [SolanaKeypairWalletProvider](https://github.com/coinbase/agentkit/blob/main/typescript/agentkit/src/wallet-providers/solanaKeypairWalletProvider.ts)
+- [PrivyWalletProvider](https://github.com/coinbase/agentkit/blob/main/typescript/agentkit/src/wallet-providers/privySvmWalletProvider.ts)
+
+### SolanaKeypairWalletProvider
+
+The `SolanaKeypairWalletProvider` is a wallet provider that uses the API [Solana web3.js](https://solana-labs.github.io/solana-web3.js/).
+
+NOTE: It is highly recommended to use a dedicated RPC provider. See [here](https://solana.com/rpc) for more info on Solana RPC infrastructure, and see [here](#rpc-url-configuration) for instructions on configuring `SolanaKeypairWalletProvider` with a custom RPC URL.
+
+#### Solana Network Configuration
+
+The `SolanaKeypairWalletProvider` can be configured to use a specific network by passing the `networkId` parameter to the `fromNetwork` method. The `networkId` is the ID of the Solana network you want to use. Valid values are `solana-mainnet`, `solana-devnet` and `solana-testnet`.
+
+The default RPC endpoints for each network are as follows:
+- `solana-mainnet`: `https://api.mainnet-beta.solana.com`
+- `solana-devnet`: `https://api.devnet.solana.com`
+- `solana-testnet`: `https://api.testnet.solana.com`
+
+```typescript
+import { SOLANA_NETWORK_ID, SolanaKeypairWalletProvider } from "@coinbase/agentkit";
+
+// Configure Solana Keypair Wallet Provider
+const privateKey = process.env.SOLANA_PRIVATE_KEY;
+const network = process.env.NETWORK_ID as SOLANA_NETWORK_ID;
+const walletProvider = await SolanaKeypairWalletProvider.fromNetwork(network, privateKey);
+```
+
+#### RPC URL Configuration
+
+The `SolanaKeypairWalletProvider` can be configured to use a specific RPC url by passing the `rpcUrl` parameter to the `fromRpcUrl` method. The `rpcUrl` will determine the network you are using.
+
+```typescript
+import { SOLANA_NETWORK_ID, SolanaKeypairWalletProvider } from "@coinbase/agentkit";
+
+// Configure Solana Keypair Wallet Provider
+const privateKey = process.env.SOLANA_PRIVATE_KEY;
+const rpcUrl = process.env.SOLANA_RPC_URL;
+const walletProvider = await SolanaKeypairWalletProvider.fromRpcUrl(network, privateKey);
+```
+
+### PrivyWalletProvider (Solana)
+
+The `PrivyWalletProvider` is a wallet provider that uses [Privy Server Wallets](https://docs.privy.io/guide/server-wallets/).
+
+NOTE: It is highly recommended to use a dedicated RPC provider. See [here](https://solana.com/rpc) for more info on Solana RPC infrastructure, and see [here](#connection-configuration) for instructions on configuring `PrivyWalletProvider` with a custom RPC URL.
+
+```typescript
+import { PrivyWalletProvider, PrivyWalletConfig } from "@coinbase/agentkit";
+
+// Configure Wallet Provider
+const config: PrivyWalletConfig = {
+    appId: "PRIVY_APP_ID",
+    appSecret: "PRIVY_APP_SECRET",
+    chainType: "solana", // optional, defaults to "evm". Make sure to set this to "solana" if you want to use Solana!
+    networkId: "solana-devnet", // optional, defaults to "solana-devnet"
+    walletId: "PRIVY_WALLET_ID", // optional, otherwise a new wallet will be created
+    authorizationPrivateKey: PRIVY_WALLET_AUTHORIZATION_PRIVATE_KEY, // optional, required if your account is using authorization keys
+    authorizationKeyId: PRIVY_WALLET_AUTHORIZATION_KEY_ID, // optional, only required to create a new wallet if walletId is not provided
+};
+
+const walletProvider = await PrivyWalletProvider.configureWithWallet(config);
+```
+
+#### Connection Configuration
+
+Optionally, you can configure your own `@solana/web3.js` connection by passing the `connection` parameter to the `configureWithWallet` method.
+
+```typescript
+import { PrivyWalletProvider, PrivyWalletConfig } from "@coinbase/agentkit";
+
+const connection = new Connection("YOUR_RPC_URL");
+
+// Configure Wallet Provider
+const config: PrivyWalletConfig = {
+    appId: "PRIVY_APP_ID",
+    appSecret: "PRIVY_APP_SECRET",
+    connection,
+    chainType: "solana", // optional, defaults to "evm". Make sure to set this to "solana" if you want to use Solana!
+    networkId: "solana-devnet", // optional, defaults to "solana-devnet"
+    walletId: "PRIVY_WALLET_ID", // optional, otherwise a new wallet will be created
+    authorizationPrivateKey: PRIVY_WALLET_AUTHORIZATION_PRIVATE_KEY, // optional, required if your account is using authorization keys
+    authorizationKeyId: PRIVY_WALLET_AUTHORIZATION_KEY_ID, // optional, only required to create a new wallet if walletId is not provided
+};
+
+const walletProvider = await PrivyWalletProvider.configureWithWallet(config);
+```
+
+#### Authorization Keys
+
+Privy offers the option to use authorization keys to secure your server wallets.
+
+You can manage authorization keys from your [Privy dashboard](https://dashboard.privy.io/account).
+
+When using authorization keys, you must provide the `authorizationPrivateKey` and `authorizationKeyId` parameters to the `configureWithWallet` method if you are creating a new wallet. Please note that when creating a key, if you enable "Create and modify wallets", you will be required to use that key when creating new wallets via the PrivyWalletProvider.
+
+#### Exporting Privy Wallet information
+
+The `PrivyWalletProvider` can export wallet information by calling the `exportWallet` method.
+
+```typescript
+const walletData = await walletProvider.exportWallet();
+
+// walletData will be in the following format:
+{
+    walletId: string;
+    authorizationKey: string | undefined;
+    networkId: string | undefined;
+}
+```
 
 ## Contributing
 
