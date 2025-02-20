@@ -13,6 +13,10 @@ from coinbase_agentkit.action_providers.opengradient.schemas import (
     OpenGradientSuiUsdt30MinReturnForecast,
     OpenGradientSuiUsdtSixHourReturnForecast,
 )
+from coinbase_agentkit.action_providers.opengradient.utils import (
+    create_block_explorer_link_smart_contract,
+    create_block_explorer_link_transaction,
+)
 
 from ...network import Network
 from ..action_decorator import create_action
@@ -38,15 +42,19 @@ class OpenGradientActionProvider(ActionProvider):
     @create_action(
         name="read_eth_usdt_one_hour_volatility_forecast",
         description="""
-This tool reads the latest ETH/USDT 1-hour volatility prediction from a model deployment on the OpenGradient network.
+This tool reads the latest ETH/USDT 1-hour volatility prediction from a smart-contract model deployment on the OpenGradient network.
 The model forecasts the standard deviation of 1-minute returns for ETH/USDT over the next hour.
 
 Inputs:
 - The model's inputs are handled automatically by oracles - no user input is required.
 
 Outputs:
-- This model outputs a single float value representing the predicted standard deviation
-Example output format: '0.0377415738%' (represents approximately .037% increase in volatility)
+- This function outputs a single float value representing the predicted standard deviation
+- This function also outputs a link to block explorer for the smart contract where the model is deployed
+
+Example output format (represents approximately .037% increase in volatility):
+'0.0377415738%'
+Block Explorer: https://explorer.opengradient.ai/address/0xFC5d8EDba288f9330Af324555F1A729303382725
 
 Important notes:
 - This is a read-only operation and will not modify any blockchain state
@@ -68,14 +76,19 @@ Important notes:
             contract_address = constants.ETH_USDT_ONE_HOUR_VOLATILITY_ADDRESS
             result = og.read_workflow_result(contract_address)
 
-            return format(float(result.numbers["Y"]), ".10%")
+            formatted_result = format(float(result.numbers["Y"]), ".10%")
+            block_explorer_link = create_block_explorer_link_smart_contract(
+                constants.ETH_USDT_ONE_HOUR_VOLATILITY_ADDRESS
+            )
+
+            return f"{formatted_result}\nBlock Explorer: {block_explorer_link}"
         except Exception as e:
             return f"Error reading one_hour_eth_usdt_volatility workflow: {e!s}"
 
     @create_action(
         name="read_sui_usdt_six_hour_return_forecast",
         description="""
-This tool reads the latest SUI/USDT 6-hour return forecast from a model deployment on the OpenGradient network.
+This tool reads the latest SUI/USDT 6-hour return forecast from a smart-contract model deployment on the OpenGradient network.
 The model predicts the expected price return over the next 6 hours for the SUI/USDT trading pair.
 
 Inputs:
@@ -83,7 +96,11 @@ Inputs:
 
 Outputs:
 - This model outputs a single float value representing the predicted 6-hour return
-Example output format: '-10.8388245106%' (represents approximately -10.84% predicted return)
+- This function also outputs a link to block explorer for the smart contract where the model is deployed
+
+Example output format (represents approximately -10.84% predicted return):
+'-10.8388245106%'
+Block Explorer: https://explorer.opengradient.ai/address/0x080881b65427Da162CA0995fB23710Db4E8d85Cb
 
 Important notes:
 - This is a read-only operation and will not modify any blockchain state
@@ -105,14 +122,19 @@ Important notes:
             contract_address = constants.SUI_USDT_SIX_HOUR_FORECAST_ADDRESS
             result = og.read_workflow_result(contract_address)
 
-            return format(float(result.numbers["destandardized_prediction"]), ".10%")
+            formatted_result = format(float(result.numbers["destandardized_prediction"]), ".10%")
+            block_explorer_link = create_block_explorer_link_smart_contract(
+                constants.SUI_USDT_SIX_HOUR_FORECAST_ADDRESS
+            )
+
+            return f"{formatted_result}\nBlock Explorer: {block_explorer_link}"
         except Exception as e:
             return f"Error reading sui_usdt_six_hour_return_forecast workflow: {e!s}"
 
     @create_action(
         name="read_sui_usdt_30_minute_return_forecast",
         description="""
-This tool reads the latest SUI/USDT 30-minute return forecast from a model deployment on the OpenGradient network.
+This tool reads the latest SUI/USDT 30-minute return forecast from a smart-contract model deployment on the OpenGradient network.
 The model predicts the expected price return over the next 30 minutes for the SUI/USDT trading pair.
 
 Inputs:
@@ -120,7 +142,11 @@ Inputs:
 
 Outputs:
 - This model outputs a single float value representing the predicted 30-minute return
-Example output format: '-3.2557994127%' (represents approximately -3.26% predicted return)
+- This function also outputs a link to block explorer for the smart contract where the model is deployed
+
+Example output format (represents approximately -3.26% predicted return):
+'-3.2557994127%'
+Block Explorer: https://explorer.opengradient.ai/address/0x7259f3a882B40aF80F7ff51D6023f23DD16b4465
 
 Important notes:
 - The prediction is automatically updated with a rolling window of recent OHLC price data from the last 10 minutes using oracle-fed data
@@ -141,14 +167,20 @@ Important notes:
             contract_address = constants.SUI_USDT_THIRTY_MIN_FORECAST_ADDRESS
             result = og.read_workflow_result(contract_address)
 
-            return format(float(result.numbers["destandardized_prediction"]), ".10%")
+            formatted_result = format(float(result.numbers["destandardized_prediction"]), ".10%")
+            block_explorer_link = create_block_explorer_link_smart_contract(
+                constants.SUI_USDT_THIRTY_MIN_FORECAST_ADDRESS
+            )
+
+            return f"{formatted_result}\nBlock Explorer: {block_explorer_link}"
         except Exception as e:
             return f"Error reading sui_usdt_30_minute_return_forecast workflow: {e!s}"
 
     @create_action(
         name="prompt_dobby",
         description="""
-This tool generates responses using the Dobby-Mini-Unhinged-Llama-3.1-8B model, a language model with a focus on crypto-positive and pro-freedom responses.
+This tool generates responses using the Dobby-Mini-Unhinged-Llama-3.1-8B model through the OpenGradient blockchain network.
+Dobby is a language model with a focus on crypto-positive and pro-freedom responses.
 Do not use this tool for other LLM models or prompt formats.
 
 Always return this functions results exactly as-is.
@@ -158,6 +190,7 @@ Inputs:
 
 Output:
 - Returns a string containing just the model's response text
+- Returns a link to the block explorer for the transaction that facilitated this inference
 
 Important notes:
 - The model has strong inherent biases towards:
@@ -195,16 +228,21 @@ Important notes:
                 max_tokens=constants.DEFAULT_MAX_TOKENS,
             )
 
-            return llm_output.chat_output.get(
+            block_explorer_link = create_block_explorer_link_transaction(
+                "0x" + llm_output.transaction_hash
+            )
+            chat_output = llm_output.chat_output.get(
                 "content", "Error: 'content' was not found in the chat output for the dobby model"
             )
+            return f"{chat_output}\nBlock Explorer: {block_explorer_link}"
         except Exception as e:
             return f"Error prompting dobby model: {e!s}"
 
     @create_action(
         name="prompt_qwen",
         description="""
-This tool generates responses using the Qwen2.5-72B-Instruct model, a language model with strong capabilities in coding, mathematics, and multilingual tasks.
+This tool generates responses using the Qwen2.5-72B-Instruct model through the OpenGradient blockchain network.
+Qwen is a language model with strong capabilities in coding, mathematics, and multilingual tasks.
 Do not use this tool for other LLM models or prompt formats.
 
 Always return this functions results exactly as-is.
@@ -214,6 +252,7 @@ Inputs:
 
 Output:
 - Returns a string containing the model's response text
+- Returns a link to the block explorer for the transaction that facilitated this inference
 
 Important notes:
 - Model excels at:
@@ -250,9 +289,13 @@ Important notes:
                 max_tokens=constants.DEFAULT_MAX_TOKENS,
             )
 
-            return llm_output.chat_output.get(
+            block_explorer_link = create_block_explorer_link_transaction(
+                "0x" + llm_output.transaction_hash
+            )
+            chat_output = llm_output.chat_output.get(
                 "content", "Error: 'content' was not found in the chat output for the qwen model"
             )
+            return f"{chat_output}\nBlock Explorer: {block_explorer_link}"
         except Exception as e:
             return f"Error prompting qwen model: {e!s}"
 
